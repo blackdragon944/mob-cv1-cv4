@@ -1,0 +1,78 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title>Historie</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="ion-padding">
+  @if (!counterService.initialized()) {
+  <div class="state-message">
+    <ion-spinner></ion-spinner>
+    <p>Načítám historii…</p>
+  </div>
+  } @else if (counterService.counters().length === 0) {
+  <p class="state-message">Historie je zatím prázdná.</p>
+  } @else {
+  <div class="history-header">
+    <p>Počet záznamů: {{ counterService.counters().length }}</p>
+    <ion-button color="danger" fill="outline" size="small" (click)="confirmClear()">
+      Vymazat vše
+    </ion-button>
+  </div>
+
+  <div class="history-stats">
+    <p>Součet hodnot: <strong>{{ totalValue() }}</strong></p>
+    @if (minValue() !== null && maxValue() !== null) {
+    <p>Minimum: <strong>{{ minValue() }}</strong></p>
+    <p>Maximum: <strong>{{ maxValue() }}</strong></p>
+    }
+  </div>
+
+  <div class="history-controls">
+    <ion-searchbar
+      placeholder="Hledat podle názvu"
+      [value]="searchTerm()"
+      (ionInput)="searchTerm.set($event.detail.value ?? '')"
+    ></ion-searchbar>
+
+    <ion-item lines="none">
+      <ion-select
+        label="Řazení"
+        interface="popover"
+        [value]="sortOrder()"
+        (ionChange)="sortOrder.set($event.detail.value)"
+      >
+        <ion-select-option value="newest">Nejnovější</ion-select-option>
+        <ion-select-option value="oldest">Nejstarší</ion-select-option>
+        <ion-select-option value="name">Název A–Z</ion-select-option>
+        <ion-select-option value="value">Hodnota (od nejvyšší)</ion-select-option>
+      </ion-select>
+    </ion-item>
+  </div>
+
+  <ion-list>
+    @for (counter of visibleCounters(); track counter.id) {
+    <ion-item>
+      <ion-label>
+        <h2>{{ counter.name }}</h2>
+        <p>{{ counter.createdAt | date: 'd. M. y, HH:mm' }}</p>
+      </ion-label>
+
+      <ion-note slot="end">{{ counter.value }}</ion-note>
+
+      <ion-button
+        slot="end"
+        color="danger"
+        fill="clear"
+        aria-label="Odstranit záznam"
+        (click)="remove(counter.id)"
+      >
+        Odstranit
+      </ion-button>
+    </ion-item>
+    } @empty {
+    <p class="state-message">Žádný záznam neodpovídá hledání „{{ searchTerm() }}“.</p>
+    }
+  </ion-list>
+  }
+</ion-content>
